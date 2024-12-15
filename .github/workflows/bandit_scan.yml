@@ -23,6 +23,7 @@ jobs:
     - name: Run Bandit Scan
       id: bandit_scan
       run: bandit -r . -f json -o bandit_results.json
+      continue-on-error: true
 
     - name: Check Bandit Results
       id: check_results
