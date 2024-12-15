@@ -22,7 +22,7 @@ jobs:
 
     - name: Run Bandit Scan
       id: bandit_scan
-      run: bandit -r . -f json -o bandit_results.json 2&> /dev/null
+      run: bandit -r . -f json -o bandit_results.json
 
     - name: Check Bandit Results
       id: check_results
