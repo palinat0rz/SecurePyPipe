@@ -3,6 +3,10 @@ name: Bandit Code Scan
 on:
   pull_request:
 
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
   bandit_scan:
     runs-on: ubuntu-latest
