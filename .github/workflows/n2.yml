@@ -56,34 +56,40 @@ jobs:
         CRITICAL_COUNT=$(jq '[.results[] | select(.issue_severity=="CRITICAL")] | length' bandit-report.json)
         echo "CRITICAL_COUNT=$CRITICAL_COUNT" >> $GITHUB_ENV
 
+    - name: Set Block Variable
+      id: set_block
+      run: |
+        if [ "$CRITICAL_COUNT" -gt 0 ]; then
+          echo "BLOCK=true" >> $GITHUB_ENV
+        else
+          echo "BLOCK=false" >> $GITHUB_ENV
+
     - name: Comment on PR
-      id: comment_pr
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BLOCK: ${{ env.BLOCK }}
         CRITICAL_COUNT: ${{ env.CRITICAL_COUNT }}
       run: |
         PR_NUMBER=$(jq -r .number <<< "${{ github.event.pull_request }}")
-        if [ "$CRITICAL_COUNT" -gt 0 ]; then
+        if [ "$BLOCK" == "true" ]; then
           curl -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
             -d '{"body": "**Bandit Scan Report:**\nCritical vulnerabilities detected. PR is blocked."}'
-          echo "BLOCK=true" >> $GITHUB_ENV
         else
           curl -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
             -d '{"body": "Bandit Scan passed successfully! PR is auto-merged."}'
-          echo "BLOCK=false" >> $GITHUB_ENV
 
   auto_merge:
     name: Auto-Merge PR
     runs-on: ubuntu-latest
     needs: analyze_findings
 
-    if: env.BLOCK == 'false'
+    if: needs.analyze_findings.outputs.BLOCK == 'false'
     steps:
     - name: Auto-merge Pull Request
       env:
