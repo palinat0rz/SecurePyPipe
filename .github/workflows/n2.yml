@@ -63,7 +63,8 @@ jobs:
           echo "BLOCK=true" >> $GITHUB_ENV
         else
           echo "BLOCK=false" >> $GITHUB_ENV
-
+        fi
+        
     - name: Comment on PR
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
