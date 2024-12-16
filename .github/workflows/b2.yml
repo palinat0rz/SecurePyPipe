@@ -33,6 +33,7 @@ jobs:
             fi
           else
             echo "block=false" >> $GITHUB_ENV
+          fi
         shell: bash
 
       - name: Add PR Comment and Block/Merge
@@ -46,3 +47,9 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Debug Bandit Output
+        run: |
+         echo "Contents of bandit_output.json:"
+         cat bandit_output.json
+       
