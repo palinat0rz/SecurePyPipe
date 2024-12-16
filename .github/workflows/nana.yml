@@ -25,7 +25,7 @@ jobs:
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
-      if: always()
+      if: always() # Ensure artifact is uploaded even if the Bandit scan fails
       with:
         name: bandit-findings
         path: bandit-report.json
@@ -33,7 +33,8 @@ jobs:
   process_findings:
     name: Process Bandit Findings
     runs-on: ubuntu-latest
-    needs: sast_scan
+    needs: [sast_scan]
+    if: always() # Ensure this job runs even if sast_scan fails
 
     steps:
     - name: Download Artifact
@@ -41,6 +42,9 @@ jobs:
       with:
         name: bandit-findings
         path: ./artifacts
+
+    - name: Install jq
+      run: sudo apt-get install -y jq
 
     - name: Analyze Bandit Report
       run: |
