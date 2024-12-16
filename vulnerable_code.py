@@ -7,3 +7,5 @@ def execute_code(code):
 # Example call
 user_input = input("Enter command: ")
 execute_code(user_input)
+
+sii = 2
