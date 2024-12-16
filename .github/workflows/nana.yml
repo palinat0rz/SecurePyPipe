@@ -4,28 +4,75 @@ on:
   pull_request:
 
 jobs:
- sast_scan:
-   name: Run Bandit Scan
-   runs-on: ubuntu-latest
+  sast_scan:
+    name: Run Bandit Scan
+    runs-on: ubuntu-latest
 
-   steps:
-   - name: Checkout code
-     uses: actions/checkout@v3
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-   - name: Set up Python
-     uses: actions/setup-python@v2
-     with:
-       python-version: 3.8
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
 
-   - name: Install Bandit
-     run: pip install bandit
+    - name: Install Bandit
+      run: pip install bandit
 
-   - name: Run Bandit Scan
-     run: bandit -ll -ii -r . -f json -o bandit-report.json
+    - name: Run Bandit Scan
+      run: bandit -ll -ii -r . -f json -o bandit-report.json
 
-   - name: Upload Artifact
-     uses: actions/upload-artifact@v3
-     if: always()
-     with:
-      name: bandit-findings
-      path: bandit-report.json
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: bandit-findings
+        path: bandit-report.json
+
+  process_findings:
+    name: Process Bandit Findings
+    runs-on: ubuntu-latest
+    needs: sast_scan
+
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: bandit-findings
+        path: ./artifacts
+
+    - name: Analyze Bandit Report
+      run: |
+        echo "Analyzing Bandit Report"
+        CRITICAL_COUNT=$(jq '[.results[] | select(.issue_severity=="CRITICAL")] | length' ./artifacts/bandit-report.json)
+        HIGH_COUNT=$(jq '[.results[] | select(.issue_severity=="HIGH")] | length' ./artifacts/bandit-report.json)
+
+        echo "Critical Issues: $CRITICAL_COUNT"
+        echo "High Issues: $HIGH_COUNT"
+
+        if [ "$CRITICAL_COUNT" -gt 0 ]; then
+          echo "block=true" >> $GITHUB_ENV
+        else
+          echo "block=false" >> $GITHUB_ENV
+        fi
+
+    - name: Comment on Pull Request
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        if [ "$block" == "true" ]; then
+          curl -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
+            -d '{"body": "**Bandit Scan Report:**\nCritical Issues: '"$CRITICAL_COUNT"'\nHigh Issues: '"$HIGH_COUNT"'"}'
+          exit 1
+        else
+          curl -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
+            -d '{"body": "Bandit Scan passed successfully with no critical issues!"}'
+        fi
