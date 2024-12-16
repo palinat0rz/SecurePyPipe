@@ -65,7 +65,7 @@ jobs:
           echo "BLOCK=false" >> $GITHUB_ENV
         fi
 
-    - name: Comment on PR
+        - name: Comment on PR
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BLOCK: ${{ env.BLOCK }}
@@ -77,7 +77,7 @@ jobs:
         # Debugging: Print PR_NUMBER
         echo "PR_NUMBER=$PR_NUMBER"
 
-        # Post appropriate comment
+        # Post appropriate comment based on the block status
         if [ "$BLOCK" == "true" ]; then
           curl -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
@@ -90,6 +90,7 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
             -d '{"body": "Bandit Scan passed successfully! PR is auto-merged."}'
+        fi  # Ensure proper closure of 'if' block
 
   auto_merge:
     name: Auto-Merge PR
