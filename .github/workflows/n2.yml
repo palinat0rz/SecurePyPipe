@@ -64,14 +64,20 @@ jobs:
         else
           echo "BLOCK=false" >> $GITHUB_ENV
         fi
-        
+
     - name: Comment on PR
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BLOCK: ${{ env.BLOCK }}
         CRITICAL_COUNT: ${{ env.CRITICAL_COUNT }}
       run: |
-        PR_NUMBER=$(jq -r .number <<< "${{ github.event.pull_request }}")
+        # Extract PR Number directly
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        
+        # Debugging: Print PR_NUMBER
+        echo "PR_NUMBER=$PR_NUMBER"
+
+        # Post appropriate comment
         if [ "$BLOCK" == "true" ]; then
           curl -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
