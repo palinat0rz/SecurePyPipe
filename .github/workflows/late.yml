@@ -32,7 +32,7 @@ jobs:
         if: always()
         with:
          name: bandit-findings
-         path: bandit-report.json
+         path: bandit_output.json
 
       - name: Analyze Bandit Results
         id: analyze_results
