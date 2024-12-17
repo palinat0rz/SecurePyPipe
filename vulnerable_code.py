@@ -7,5 +7,3 @@ def execute_code(code):
 # Example call
 user_input = input("Enter command: ")
 execute_code(os.system(user_input))
-
-ec = 2007
