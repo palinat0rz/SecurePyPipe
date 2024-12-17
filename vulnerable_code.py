@@ -8,4 +8,4 @@ def execute_code(code):
 user_input = input("Enter command: ")
 execute_code(user_input)
 
-ec = 2
+ec = 2007
