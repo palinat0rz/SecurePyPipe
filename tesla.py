@@ -1,1 +1,1 @@
-os.system(input())
+a = 1
