@@ -27,6 +27,13 @@ jobs:
         id: bandit_scan
         run: bandit -r . -f json -o bandit_output.json || true
 
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+         name: bandit-findings
+         path: bandit-report.json
+
       - name: Analyze Bandit Results
         id: analyze_results
         run: |
