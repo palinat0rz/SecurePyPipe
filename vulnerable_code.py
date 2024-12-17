@@ -1,9 +1,9 @@
 # Input two numbers
-num1 = float(input("Enter the first number: "))
-num2 = float(input("Enter the second number: "))
+num4 = float(input("Enter the first number: "))
+num5 = float(input("Enter the second number: "))
 
 # Calculate the sum
-result = num1 + num2
+result = num4 + num5
 
 # Display the result
-print(f"The sum of {num1} and {num2} is: {result}")
+print(f"The sum of {num4} and {num5} is: {result}")
